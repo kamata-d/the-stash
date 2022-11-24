@@ -1,0 +1,9 @@
+{
+	"name": "rep-corona-19-adf",
+	"location": "francecentral",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "3e32f3c3-beb2-4a09-9363-5aae406cc406",
+		"tenantId": "4a06d40c-e447-42be-baef-dd0421ed10bd"
+	}
+}
