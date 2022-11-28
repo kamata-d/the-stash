@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "rep-corona-19-adf"
+		},
+		"ls_ablob_repcorona19sa_connectionString": {
+			"value": ""
+		},
+		"ls_adls_repcorona19adl_accountKey": {
+			"value": ""
+		},
+		"ls_adls_repcorona19adl_properties_typeProperties_url": {
+			"value": "https://repcorona19adl.dfs.core.windows.net/"
+		},
+		"ls_http_ecdec_opendata_europa_eu_properties_typeProperties_url": {
+			"value": "@{linkedService().baseURL}"
+		},
+		"tr_ingest_population_data_properties_typeProperties_scope": {
+			"value": "/subscriptions/5e212943-df04-4dd2-9da4-a634fb3acb0b/resourceGroups/rep-corona-19-rg/providers/Microsoft.Storage/storageAccounts/repcorona19sa"
+		}
+	}
+}
