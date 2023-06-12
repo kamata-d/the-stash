@@ -11,8 +11,29 @@
 		"ls_adls_repcorona19adl_accountKey": {
 			"value": ""
 		},
+		"ls_hdi_covid_cluster_clusterPassword": {
+			"value": ""
+		},
+		"ls_hdi_covid_cluster_clusterSshPassword": {
+			"value": ""
+		},
+		"ls_hdi_covid_cluster_servicePrincipalKey": {
+			"value": ""
+		},
 		"ls_adls_repcorona19adl_properties_typeProperties_url": {
 			"value": "https://repcorona19adl.dfs.core.windows.net/"
+		},
+		"ls_hdi_covid_cluster_properties_typeProperties_hostSubscriptionId": {
+			"value": "5e212943-df04-4dd2-9da4-a634fb3acb0b"
+		},
+		"ls_hdi_covid_cluster_properties_typeProperties_clusterResourceGroup": {
+			"value": "rep-corona-19-rg"
+		},
+		"ls_hdi_covid_cluster_properties_typeProperties_servicePrincipalId": {
+			"value": "bbb8ac7a-effe-4c73-bbf6-f8a831acc907"
+		},
+		"ls_hdi_covid_cluster_properties_typeProperties_tenant": {
+			"value": "4a06d40c-e447-42be-baef-dd0421ed10bd"
 		},
 		"ls_http_ecdec_opendata_europa_eu_properties_typeProperties_url": {
 			"value": "@{linkedService().baseURL}"
