@@ -11,6 +11,9 @@
 		"ls_adls_repcorona19adl_accountKey": {
 			"value": ""
 		},
+		"ls_db_covid_cluster_accessToken": {
+			"value": ""
+		},
 		"ls_hdi_covid_cluster_clusterPassword": {
 			"value": ""
 		},

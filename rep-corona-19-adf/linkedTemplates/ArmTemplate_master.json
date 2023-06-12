@@ -15,6 +15,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'ls_adls_repcorona19adl'"
 		},
+		"ls_db_covid_cluster_accessToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessToken' of 'ls_db_covid_cluster'"
+		},
 		"ls_hdi_covid_cluster_clusterPassword": {
 			"type": "secureString",
 			"metadata": "Secure string for 'clusterPassword' of 'ls_hdi_covid_cluster'"
@@ -87,6 +91,9 @@
 					},
 					"ls_adls_repcorona19adl_accountKey": {
 						"value": "[parameters('ls_adls_repcorona19adl_accountKey')]"
+					},
+					"ls_db_covid_cluster_accessToken": {
+						"value": "[parameters('ls_db_covid_cluster_accessToken')]"
 					},
 					"ls_hdi_covid_cluster_clusterPassword": {
 						"value": "[parameters('ls_hdi_covid_cluster_clusterPassword')]"
