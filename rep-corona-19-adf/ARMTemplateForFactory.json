@@ -1126,7 +1126,7 @@
 						}
 					],
 					"linkedServiceName": {
-						"referenceName": "ls_ablob_repcorona19sa",
+						"referenceName": "ls_adls_repcorona19adl",
 						"type": "LinkedServiceReference"
 					},
 					"headNodeSize": "",
@@ -1135,7 +1135,8 @@
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_ablob_repcorona19sa')]"
+				"[concat(variables('factoryId'), '/linkedServices/ls_ablob_repcorona19sa')]",
+				"[concat(variables('factoryId'), '/linkedServices/ls_adls_repcorona19adl')]"
 			]
 		},
 		{
