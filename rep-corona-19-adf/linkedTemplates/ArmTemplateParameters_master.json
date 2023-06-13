@@ -23,6 +23,9 @@
 		"ls_hdi_covid_cluster_servicePrincipalKey": {
 			"value": ""
 		},
+		"ls_sql_covid_db_connectionString": {
+			"value": ""
+		},
 		"ls_adls_repcorona19adl_properties_typeProperties_url": {
 			"value": "https://repcorona19adl.dfs.core.windows.net/"
 		},

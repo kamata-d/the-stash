@@ -7,6 +7,34 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "rep-corona-19-adf"
 		},
+		"ls_hdi_covid_cluster_clusterPassword": {
+			"type": "secureString",
+			"metadata": "Secure string for 'clusterPassword' of 'ls_hdi_covid_cluster'"
+		},
+		"ls_hdi_covid_cluster_clusterSshPassword": {
+			"type": "secureString",
+			"metadata": "Secure string for 'clusterSshPassword' of 'ls_hdi_covid_cluster'"
+		},
+		"ls_hdi_covid_cluster_servicePrincipalKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'servicePrincipalKey' of 'ls_hdi_covid_cluster'"
+		},
+		"ls_hdi_covid_cluster_properties_typeProperties_hostSubscriptionId": {
+			"type": "string",
+			"defaultValue": "5e212943-df04-4dd2-9da4-a634fb3acb0b"
+		},
+		"ls_hdi_covid_cluster_properties_typeProperties_clusterResourceGroup": {
+			"type": "string",
+			"defaultValue": "rep-corona-19-rg"
+		},
+		"ls_hdi_covid_cluster_properties_typeProperties_servicePrincipalId": {
+			"type": "string",
+			"defaultValue": "bbb8ac7a-effe-4c73-bbf6-f8a831acc907"
+		},
+		"ls_hdi_covid_cluster_properties_typeProperties_tenant": {
+			"type": "string",
+			"defaultValue": "4a06d40c-e447-42be-baef-dd0421ed10bd"
+		},
 		"tr_ingest_population_data_properties_typeProperties_scope": {
 			"type": "string",
 			"defaultValue": "/subscriptions/5e212943-df04-4dd2-9da4-a634fb3acb0b/resourceGroups/rep-corona-19-rg/providers/Microsoft.Storage/storageAccounts/repcorona19sa"
@@ -16,6 +44,394 @@
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_hdi_covid_cluster')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "HDInsightOnDemand",
+				"typeProperties": {
+					"clusterType": "hadoop",
+					"clusterSize": 2,
+					"timeToLive": "00:15:00",
+					"version": "4.0",
+					"hostSubscriptionId": "[parameters('ls_hdi_covid_cluster_properties_typeProperties_hostSubscriptionId')]",
+					"clusterResourceGroup": "[parameters('ls_hdi_covid_cluster_properties_typeProperties_clusterResourceGroup')]",
+					"servicePrincipalId": "[parameters('ls_hdi_covid_cluster_properties_typeProperties_servicePrincipalId')]",
+					"tenant": "[parameters('ls_hdi_covid_cluster_properties_typeProperties_tenant')]",
+					"clusterNamePrefix": "",
+					"clusterPassword": {
+						"type": "SecureString",
+						"value": "[parameters('ls_hdi_covid_cluster_clusterPassword')]"
+					},
+					"clusterSshPassword": {
+						"type": "SecureString",
+						"value": "[parameters('ls_hdi_covid_cluster_clusterSshPassword')]"
+					},
+					"servicePrincipalKey": {
+						"type": "SecureString",
+						"value": "[parameters('ls_hdi_covid_cluster_servicePrincipalKey')]"
+					},
+					"additionalLinkedServiceNames": [
+						{
+							"referenceName": "ls_ablob_repcorona19sa",
+							"type": "LinkedServiceReference"
+						}
+					],
+					"linkedServiceName": {
+						"referenceName": "ls_adls_repcorona19adl",
+						"type": "LinkedServiceReference"
+					},
+					"headNodeSize": "",
+					"dataNodeSize": "",
+					"zookeeperNodeSize": ""
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_ingest_ecdc_data')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Lookup ECDC File List",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "ds_ecdc_file_list",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEach Lookup File Copy Data",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Lookup ECDC File List",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup ECDC File List').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Copy Cases and Deaths Data",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "00:05:00",
+										"retry": 3,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"storeSettings": {
+												"type": "HttpReadSettings",
+												"requestMethod": "GET"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_ecdc_raw_csv_http",
+											"type": "DatasetReference",
+											"parameters": {
+												"relativeURL": {
+													"value": "@item().sourceRelativeURL",
+													"type": "Expression"
+												},
+												"baseURL": {
+													"value": "@item().sourceBaseURL",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_ecdc_raw_csv_dl",
+											"type": "DatasetReference",
+											"parameters": {
+												"fileName": {
+													"value": "@item().sinkFileName",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-11-21T22:31:18Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_ingest_population_data')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Check if source file exists",
+						"type": "Validation",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_population_raw_gz",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"timeout": "0.00:02:00",
+							"sleep": 10,
+							"minimumSize": 1024
+						}
+					},
+					{
+						"name": "Get Metadata for source file",
+						"type": "GetMetadata",
+						"dependsOn": [
+							{
+								"activity": "Check if source file exists",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.00:15:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_population_raw_gz",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"fieldList": [
+								"columnCount",
+								"exists",
+								"size"
+							],
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "DelimitedTextReadSettings"
+							}
+						}
+					},
+					{
+						"name": "If Column Count Matches",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "Get Metadata for source file",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(activity('Get Metadata for source file').output.columnCount,13)",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "Column Count Fail",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": "Column count in source file is not correct",
+										"errorCode": "500"
+									}
+								}
+							],
+							"ifTrueActivities": [
+								{
+									"name": "Copy Population Data",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.00:05:00",
+										"retry": 3,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"storeSettings": {
+												"type": "AzureBlobStorageReadSettings",
+												"recursive": true,
+												"enablePartitionDiscovery": false
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_population_raw_gz",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_population_raw_tsv",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									]
+								},
+								{
+									"name": "Delete Source File",
+									"description": "Delete the source file, after it has been successfully copied to the Data Lake",
+									"type": "Delete",
+									"dependsOn": [
+										{
+											"activity": "Copy Population Data",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataset": {
+											"referenceName": "ds_population_raw_gz",
+											"type": "DatasetReference",
+											"parameters": {}
+										},
+										"enableLogging": false,
+										"storeSettings": {
+											"type": "AzureBlobStorageReadSettings",
+											"recursive": false,
+											"enablePartitionDiscovery": false
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-11-20T15:41:23Z"
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/pl_process_testing_data')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
@@ -45,6 +461,80 @@
 							"referenceName": "ls_hdi_covid_cluster",
 							"type": "LinkedServiceReference"
 						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_hdi_covid_cluster')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_sqlize_cases_and_deaths_data')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy Caes and Deaths",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"wildcardFileName": "*",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"preCopyScript": "TRUNCATE TABLE \ncovid_reporting.cases_and_deaths",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false,
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_processed_cases_and_deaths",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_sql_cases_and_deaths",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
 					}
 				],
 				"policy": {
@@ -553,7 +1043,9 @@
 					}
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_ingest_ecdc_data')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/tr_ingest_population_data')]",
@@ -581,7 +1073,9 @@
 					]
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_ingest_population_data')]"
+			]
 		}
 	]
 }
