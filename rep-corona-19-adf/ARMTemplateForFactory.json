@@ -1146,6 +1146,9 @@
 					},
 					"newClusterNodeType": "Standard_DS3_v2",
 					"newClusterNumOfWorker": "1",
+					"newClusterSparkEnvVars": {
+						"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+					},
 					"newClusterVersion": "12.2.x-scala2.12",
 					"clusterOption": "Fixed",
 					"newClusterInitScripts": []
@@ -1162,7 +1165,7 @@
 				"type": "HDInsightOnDemand",
 				"typeProperties": {
 					"clusterType": "hadoop",
-					"clusterSize": 4,
+					"clusterSize": 2,
 					"timeToLive": "00:15:00",
 					"version": "4.0",
 					"hostSubscriptionId": "[parameters('ls_hdi_covid_cluster_properties_typeProperties_hostSubscriptionId')]",
