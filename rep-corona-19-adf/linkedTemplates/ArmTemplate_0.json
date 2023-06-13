@@ -502,7 +502,6 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": "hospital_admissions_weekly",
 						"folderPath": "ecdc/hospital_admissions_weekly",
 						"fileSystem": "processed"
 					},
@@ -531,12 +530,10 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": "hospital_admissions_daily",
 						"folderPath": "ecdc/hospital_admissions_daily",
 						"fileSystem": "processed"
 					},
 					"columnDelimiter": ",",
-					"rowDelimiter": "\n",
 					"escapeChar": "\\",
 					"firstRowAsHeader": true,
 					"quoteChar": "\""
