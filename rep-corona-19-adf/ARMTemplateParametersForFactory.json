@@ -26,6 +26,9 @@
 		"ls_adls_repcorona19adl_properties_typeProperties_url": {
 			"value": "https://repcorona19adl.dfs.core.windows.net/"
 		},
+		"ls_db_covid_cluster_properties_typeProperties_existingClusterId": {
+			"value": "0613-195208-lwrs4y92"
+		},
 		"ls_hdi_covid_cluster_properties_typeProperties_hostSubscriptionId": {
 			"value": "5e212943-df04-4dd2-9da4-a634fb3acb0b"
 		},
